@@ -1,0 +1,263 @@
+LINUX MINT  Mate (viene de Ubuntu)     27/08/2025
+sudo apt upgrade
+sudo apt install htop    (neofetch ya estaba instalado)
+sudo apt install stacer
+sudo apt install gparted
+sudo apt install variety    (cambiador fondos pantalla)
+flatpak install flathub org.chromium.Chromium
+flatpak install flathub io.github.mimbrero.WhatsAppDesktop
+flatpak install flathub us.zoom.Zoom 
+flatpak install flathub org.videolan.VLC
+flatpak install flathub com.rustdesk.RustDesk
+flatpak install flathub io.github.webcamoid.Webcamoid
+flatpak install flathub nz.mega.MEGAsync 
+flatpak install flathub org.speed_dreams.SpeedDreams
+Megasync: ir a pagina https://mega.io/es/desktop hasta “Descarga la aplicación de escritorio de MEGA” Linux / Mint / Version -Luego en Descargas de la PC
+“Abrir con instalador de paquetes GDebi” e instalar.
+Sensors    (muestra coretemp) 
+https://forums.linuxmint.com/viewtopic.php?t=239176 
+Tutorial para monitorear temperatura cpu
+En barra de tareas o panel, botón derecho click en añadir panel, en barra de búsqueda poner: “Hardware Sensor Monitor” click en añadir.
+Tamaño reloj en pantalla en: Variety / preferencias / Efectos  / Reloj / Apariencia
+Configuración del escritorio (ajuste detallado de la configuración + Equipo + Carpeta personal + Papelera ) 
+
+
+
+Links Populares para Google
+
+•	Mi Afip
+https://www.afip.gob.ar/landing/default.asp
+
+•	Mi Argentina: https://id.argentina.gob.ar/ingresar/?next=/authorize/%3Fclient_id%3D613410%26response_type%3Dcode%26scope%3Dopenid%2Bprofile%2Bemail%2Boptional%26redirect_uri%3Dhttps%3A//mi.argentina.gob.ar/_oauth/
+
+•	Mi Anses:   
+https://servicioscorp.anses.gob.ar/clavelogon/logon.aspx?system=miansesv2
+•	Mi Pami:
+https://mi.pami.org.ar/login
+•	Mi Personal Flow
+https://idpsesion.telecom.com.ar/openam/XUI/?realm=/convergente&goto=https://idpsesion.telecom.com.ar:443/openam/oauth2/realms/root/realms/convergente/authorize?response_type%3Dcode%26client_id%3Df70a8442c0f0c7d0d72cd6ee2ac29555%26scope%3Dopenid%2520profile%26redirect_uri%3Dhttps://www.personal.com.ar/mi-personal-flow%26code_challenge%3D_TCFVTT__9rNss0Qc3oqrBeDF1xpD9DnIJtq0dLJLP4%26code_challenge_method%3DS256#login/
+
+•	Mi Sube:
+https://tarjetasube.sube.gob.ar/subeweb/webforms/account/views/login.aspx
+
+•	Mi Movistar
+https://idp.movistar.com.ar/convergencia/login_A.html
+
+•	Mi Claro
+https://ingreso.claro.com.ar/auth/realms/claro/protocol/openid-connect/auth?response_type=code&client_id=mi-claro-backend&scope=openid%20profile%20email%20ums_scope%20linea_scope%20email_scope%20miclaro.claro.amx/api:rw%20ums.claro.amx/user:r&state=Tk6UYRfEqtnVgXNJCVtdlUgo3tYDhSW_f6wZDvRwwMU%3D&redirect_uri=https://m-miclaro.claro.com.ar/login/oauth2/code/idp&nonce=Kcdc-pLHSBQfD0UPCRkmZkyhDvQxwiwbYnSpPpw9VaY
+
+•	Mi Facebook
+https://www.facebook.com/
+
+•	Mi Instagram
+https://www.instagram.com/?hl=es-la
+
+•	Mi Mercado Libre
+https://www.mercadolibre.com.ar/
+
+•	Mi Mercado Pago
+https://www.mercadopago.com.ar/
+
+•	Mi Pago Mis Cuentas
+https://web.pagomiscuentas.com/login
+
+•	Mi Arba
+https://sso.arba.gov.ar/Login/login?service=https%3A//www.arba.gov.ar/Gestionar/PanelAutogestion.asp
+
+•	Mi AySa
+https://oficinavirtual.web.aysa.com.ar/index.html
+
+•	Mi Dropbox
+https://www.dropbox.com/login?src=logout
+
+•	Mi Mega
+https://mega.nz/login
+
+•	Mi Edenor
+https://edenordigital.com/ingreso?utm_source=mailing&utm_medium=email&utm_campaign=Morosidad
+
+
+•	Mi Edesur
+https://ov.edesur.com.ar/login
+
+•	Mi Naturgy
+https://ov.naturgy.com.ar/ingreso
+
+•	Mi Netflix
+https://www.netflix.com/ar/
+
+•	Mi Zoom
+https://zoom.us/signin#/login
+
+•	Mi Banco Nacion HB
+https://hb.redlink.com.ar/bna/login.htm
+
+•	Mi Banco Ciudad HB
+https://hb.bancociudad.com.ar/login
+
+•	MiBa cuenta Gob Bs As
+https://buenosaires.gob.ar/inicio/
+
+
+
+
+
+
+
+
+
+
+
+ZORIN 17 – LITE (viene de Ubuntu)
+Con Nvidia instalar opción 2 (Graphical)
+sudo apt Update
+sudo apt upgrade
+sudo apt install neofetch htop
+sudo apt-get install gparted
+flatpak install flathub io.github.mimbrero.WhatsAppDesktop
+flatpak install flathub us.zoom.Zoom
+flatpak install flathub org.videolan.VLC
+flatpak install flathub com.anydesk.Anydesk
+flatpak install flathub org.speed_dreams.SpeedDreams
+Instalar Google Chrome por consola terminal
+Wget  https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+Enter 
+sudo apt-get update
+Enter
+sudo apt-get install libappinidcatorl        (o libappindicator1 ?)
+Enter
+sudo dpkg -I google-chrome-stable_current_amd64.deb
+
+Instalar Zoom 
+sudo dpkg -i /home/users/descargas/zoom_amd64.deb 
+
+
+
+
+
+
+
+
+
+LINUX – ARCH LINUX 						
+Actualiza los paquetes
+sudo pacman -Syu
+
+LIBREOFFICE EN ESPAÑOL
+sudo pacman -Sy hunspell-es_ar libreoffice-fresh-es
+
+Instalar Neofetch
+sudo pacman -S neofetch
+
+Instalar firefox en español
+sudo pacman -S firefox-i18n-es-ar
+
+Instalar sensores
+sudo pacman -S lm_sensors
+sudo sensors-detect
+
+Conozca su sistema
+Free -h
+
+LINUX – LITE (viene de Ubuntu)
+Actualiza todo
+sudo apt upgrade
+
+muestra lo descatualizado
+sudo apt list -upgradable
+
+Bodhi LINUX (viene de Ubuntu)
+sudo apt install neofetch
+Linux Antix
+sudo apt Update
+sudo apt Upgrade
+sudo apt install neofetch
+sudo apt install libreoffice-l10n-es
+Manjaro 
+sudo pacman -Syu -y 
+Script ChatGPT del 10/04/2025
+
+#!/bin/bash
+
+echo "🔧 Instalando utilidades necesarias..."
+sudo apt update
+sudo apt install -y cpufrequtils lm-sensors psensor
+
+echo "🔍 Detectando sensores (esto puede tardar un poquito)..."
+yes | sudo sensors-detect > /dev/null
+
+echo "📦 Detectando gobernadores de CPU disponibles..."
+AVAILABLE=$(cpufreq-info -g)
+
+if [ -z "$AVAILABLE" ]; then
+    echo "❌ No se detectaron gobernadores. ¿Tu CPU lo soporta?"
+    exit 1
+fi
+
+echo "✅ Gobernadores disponibles: $AVAILABLE"
+echo
+read -rp "📌 Elegí uno (copialo tal como aparece): " GOVERNOR
+
+if [[ ! "$AVAILABLE" =~ $GOVERNOR ]]; then
+    echo "❌ Gobernador no válido. Abortando."
+    exit 1
+fi
+
+echo "⚙️ Aplicando '$GOVERNOR' a todos los núcleos..."
+for cpu in /sys/devices/system/cpu/cpu[0-9]*; do
+    echo $GOVERNOR | sudo tee "$cpu/cpufreq/scaling_governor" > /dev/null
+done
+
+echo "🛠️ Creando servicio systemd para usar '$GOVERNOR' al inicio..."
+
+sudo tee /etc/systemd/system/cpufreq-custom.service > /dev/null <<EOF
+[Unit]
+Description=Set CPU governor to $GOVERNOR
+After=multi-user.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/cpufreq-set -r -g $GOVERNOR
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+echo "📎 Habilitando servicio..."
+sudo systemctl daemon-reload
+sudo systemctl enable cpufreq-custom.service
+sudo systemctl start cpufreq-custom.service
+
+echo "📂 Agregando Psensor al inicio automático..."
+
+mkdir -p ~/.config/autostart
+
+cat > ~/.config/autostart/psensor.desktop <<EOF
+[Desktop Entry]
+Type=Application
+Exec=psensor
+Hidden=false
+NoDisplay=false
+X-GNOME-Autostart-enabled=true
+Name=Psensor
+Comment=Monitorea temperatura del CPU
+EOF
+
+echo
+echo "✅ Todo listo:"
+echo "🌡️ Psensor mostrará la temperatura en la barra"
+echo "⚡ El CPU usará '$GOVERNOR' automáticamente al encender"
+echo
+echo "🔥 Podés verificar con 'sensors' y ajustar Psensor desde su ícono en la barra"
+
+
+
+Descargar Script
+
+wget -O optimizador-cpu-temperatura.sh https://gist.githubusercontent.com/augminded/e0b41a210f67254e6637c72bfb424369/raw/optimizador-cpu-temperatura.sh
+chmod +x optimizador-cpu-temperatura.sh
+./optimizador-cpu-temperatura.sh
+
+
+lspci -nnk | grep -i net
+
