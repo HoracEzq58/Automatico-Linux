@@ -3,7 +3,8 @@
 # Repo: Fi-2603 -> carpeta local: ~/Imagenes/Fi-2603
 
 USUARIO=$(whoami)
-DESTINO="/home/$USUARIO/Imagenes"
+DESTINO=$(xdg-user-dir PICTURES)
+mkdir -p "$DESTINO"
 
 rm -rf "$DESTINO/Fi-2603"
 rm -f  "$DESTINO/Fi-2603.zip"
