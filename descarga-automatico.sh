@@ -2,7 +2,7 @@
 # Repo: Automatico-Linux -> carpeta local: Automatico // Claude 01/05/2026
 
 USUARIO=$(whoami)
-DESTINO="/home/$USUARIO/Documentos"
+DESTINO="$HOME/Documentos"
 
 rm -rf "$DESTINO/Automatico"
 rm -f  "$DESTINO/Automatico-Linux.zip"
