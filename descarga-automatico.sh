@@ -7,8 +7,7 @@ DESTINO="$HOME/Documentos"
 rm -rf "$DESTINO/Automatico"
 rm -f  "$DESTINO/Automatico-Linux.zip"
 
-wget "https://github.com/HoracEzq58/Automatico-Linux/archive/refs/heads/main.zip" \
-     -O "$DESTINO/Automatico-Linux.zip"
+wget "https://github.com/HoracEzq58/Automatico-Linux/archive/refs/heads/main.zip" -O "$DESTINO/Automatico-Linux.zip"
 
 unzip "$DESTINO/Automatico-Linux.zip" -d "$DESTINO"
 rm -f "$DESTINO/Automatico-Linux.zip"
