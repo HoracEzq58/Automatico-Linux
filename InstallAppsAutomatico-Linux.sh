@@ -24,7 +24,8 @@ flatpak install -y flathub org.chromium.Chromium \
 io.github.mimbrero.WhatsAppDesktop \
 us.zoom.Zoom \
 org.videolan.VLC \
-com.rustdesk.RustDesk
+com.rustdesk.RustDesk \
+org.localsend.localsend_app
 
 # 5. Reparar Keyring de Chromium (Versión Flatpak)
 # Creamos un alias para que no pida contraseña al abrirlo
