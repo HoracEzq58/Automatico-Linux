@@ -1,21 +1,27 @@
-# "descarga-automatico.sh" Descargar carpeta completa si lo hago en maquinas cliente (no tienen Git)
-# Repo: Automatico-Linux -> carpeta local: Automatico // Claude 01/05/2026
+#!/bin/bash
+# "descarga-automatico.sh" Descargar repo y renombrar a carpeta local "Automatico"
 
-USUARIO=$(whoami)
 DESTINO="$HOME/Documentos"
 
+# 1. Limpieza previa de descargas o carpetas anteriores
 rm -rf "$DESTINO/Automatico"
+rm -rf "$DESTINO/Automatico-Linux-main"
 rm -f  "$DESTINO/Automatico-Linux.zip"
 
-wget "https://github.com/HoracEzq58/Automatico-Linux/archive/refs/heads/main.zip" -O "$DESTINO/Automatico-Linux.zip"
+# 2. Descargar el zip del repositorio
+wget -q --show-progress "https://github.com/HoracEzq58/Automatico-Linux/archive/refs/heads/main.zip" -O "$DESTINO/Automatico-Linux.zip"
 
-unzip "$DESTINO/Automatico-Linux.zip" -d "$DESTINO"
+# 3. Descomprimir silenciosamente en Documentos
+unzip -q "$DESTINO/Automatico-Linux.zip" -d "$DESTINO"
+
+# 4. Renombrar la carpeta extraída a "Automatico" y limpiar el zip
+mv "$DESTINO/Automatico-Linux-main" "$DESTINO/Automatico"
 rm -f "$DESTINO/Automatico-Linux.zip"
-mv    "$DESTINO/Automatico-Linux-main" "$DESTINO/Automatico"
 
-# Dar permisos de ejecucion a todos los scripts de una
-chmod +x "$DESTINO"/Automatico/*.sh
+# 5. Dar permisos de ejecución recursivos a todos los .sh (incluso en subcarpetas)
+find "$DESTINO/Automatico" -type f -name "*.sh" -exec chmod +x {} +
 
-echo "Listo! Carpeta disponible en $DESTINO/Automatico"
+# 6. Salida limpia
+echo -e "\n¡Listo! Carpeta disponible en: $DESTINO/Automatico\n"
 echo "Scripts listos para ejecutar:"
-ls "$DESTINO/Automatico/"*.sh
+ls -1 "$DESTINO/Automatico/"*.sh 2>/dev/null || echo "No se encontraron scripts .sh en la raíz."
