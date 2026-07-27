@@ -13,6 +13,8 @@ sudo apt autoremove -y
 sudo rm -f /etc/apt/preferences.d/nosnap.pref
 sudo apt update && sudo apt upgrade -y
 sudo apt install -y snapd ttf-mscorefonts-installer htop inxi stacer gparted variety simplescreenrecorder
+echo "--- Instalando Tailscale ---"
+curl -fsSL https://tailscale.com/install.sh | sh
 
 # 3. Diversión y Juegos
 sudo apt install -y supertuxkart extremetuxracer
