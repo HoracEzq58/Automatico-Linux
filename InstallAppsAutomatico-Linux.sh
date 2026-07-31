@@ -1,35 +1,64 @@
 #!/bin/bash
 # =================================================================
-# InstallAppsAutomatico-Linux.sh - Grok 28/07/2026
-# Versión mejorada - Curso ABC PC ICO - Casa de Oración Flores
+# InstallAppsAutomatico-Linux.sh - Versión 2 Grok 29/07/2026 (casi 0 intervención)
+# Curso ABC PC ICO - Casa de Oración Flores
 # Linux Mint MATE (DDR2 / DDR3)
 # =================================================================
+
+echo "======================================================"
+echo "  InstallApps Automático - Versión 2"
+echo "  Pedirá la contraseña UNA sola vez"
+echo "======================================================"
+echo ""
+
+# Pedir contraseña una sola vez
+read -s -p "Ingresá la contraseña del usuario (sudo): " PASSWORD
+echo ""
+echo "Contraseña guardada. El resto del proceso será automático..."
+echo ""
+
+# Función para ejecutar comandos con sudo usando la contraseña
+run_sudo() {
+  echo "$PASSWORD" | sudo -S "$@"
+}
+
+# Verificar que la contraseña sea correcta
+if ! echo "$PASSWORD" | sudo -S -v 2>/dev/null; then
+  echo "ERROR: Contraseña incorrecta. Abortando."
+  exit 1
+fi
 
 echo "--- Iniciando el Tune-up de la Pc ---"
 
 # 1. Limpieza inicial
-sudo apt purge -y libreoffice* firefox
-sudo apt autoremove -y
+run_sudo apt purge -y libreoffice* firefox
+run_sudo apt autoremove -y
 
-# 2. Actualizar sistema
-sudo rm -f /etc/apt/preferences.d/nosnap.pref
-sudo apt update && sudo apt upgrade -y
-sudo apt install -y snapd ttf-mscorefonts-installer htop inxi stacer gparted variety simplescreenrecorder
+# 2. Actualizar sistema + aceptar EULA de fuentes Microsoft
+export DEBIAN_FRONTEND=noninteractive
+echo "ttf-mscorefonts-installer msttcorefonts/accepted-mscorefonts-eula select true" | run_sudo debconf-set-selections
+
+run_sudo rm -f /etc/apt/preferences.d/nosnap.pref
+run_sudo apt update
+run_sudo apt upgrade -y
+run_sudo apt install -y snapd ttf-mscorefonts-installer htop inxi stacer gparted variety simplescreenrecorder
 
 # 3. Tailscale (método robusto)
 echo "--- Instalando Tailscale ---"
 source /etc/os-release
 CODENAME="${UBUNTU_CODENAME:-jammy}"
-curl -fsSL https://pkgs.tailscale.com/stable/ubuntu/${CODENAME}.noarmor.gpg | sudo tee /usr/share/keyrings/tailscale-archive-keyring.gpg >/dev/null
-curl -fsSL https://pkgs.tailscale.com/stable/ubuntu/${CODENAME}.tailscale-keyring.list | sudo tee /etc/apt/sources.list.d/tailscale.list >/dev/null
-sudo apt update
-sudo apt install -y tailscale
+
+curl -fsSL https://pkgs.tailscale.com/stable/ubuntu/${CODENAME}.noarmor.gpg | run_sudo tee /usr/share/keyrings/tailscale-archive-keyring.gpg >/dev/null
+curl -fsSL https://pkgs.tailscale.com/stable/ubuntu/${CODENAME}.tailscale-keyring.list | run_sudo tee /etc/apt/sources.list.d/tailscale.list >/dev/null
+
+run_sudo apt update
+run_sudo apt install -y tailscale
 
 # 4. Juegos
-sudo apt install -y supertuxkart extremetuxracer
+run_sudo apt install -y supertuxkart extremetuxracer
 
-# 5. Flatpak (instalado como usuario para evitar problemas de permisos)
-sudo apt install -y flatpak
+# 5. Flatpak (como usuario)
+run_sudo apt install -y flatpak
 flatpak remote-add --if-not-exists --user flathub https://flathub.org/repo/flathub.flatpakrepo
 
 flatpak install -y --user flathub \
@@ -40,22 +69,23 @@ flatpak install -y --user flathub \
   com.rustdesk.RustDesk \
   org.localsend.localsend_app
 
-# Corregir permisos de Flatpak (importante)
+# Corregir permisos de Flatpak
 mkdir -p ~/.var
-sudo chown -R $USER:$USER ~/.var
+run_sudo chown -R $USER:$USER ~/.var
 chmod -R u+rwX ~/.var
 
-# 6. Alias Chromium (sin pedir keyring)
+# 6. Alias Chromium
 if [ ! -f ~/.bashrc_backup ]; then cp ~/.bashrc ~/.bashrc_backup; fi
 grep -q "alias chromium=" ~/.bashrc || echo "alias chromium='flatpak run org.chromium.Chromium --password-store=basic'" >> ~/.bashrc
 
 # 7. WPS Office
-sudo snap install wps-office-multilang
-sudo snap connect wps-office-multilang:cups-control
-sudo snap connect wps-office-multilang:alsa
-sudo snap connect wps-office-multilang:pulseaudio
-sudo snap connect wps-office-multilang:home
-sudo snap connect wps-office-multilang:desktop-legacy
+echo "--- Instalando WPS Office ---"
+run_sudo snap install wps-office-multilang
+run_sudo snap connect wps-office-multilang:cups-control
+run_sudo snap connect wps-office-multilang:alsa
+run_sudo snap connect wps-office-multilang:pulseaudio
+run_sudo snap connect wps-office-multilang:home
+run_sudo snap connect wps-office-multilang:desktop-legacy
 
 # Configurar idioma español Argentina
 mkdir -p ~/.config/Kingsoft
@@ -67,8 +97,8 @@ EOF
 echo "es_AR" > ~/.local/share/Kingsoft/office6/dicts/default.dic
 
 mkdir -p ~/snap/wps-office-multilang/current/.config/Kingsoft
-cp ~/.config/Kingsoft/WPSOffice.conf ~/snap/wps-office-multilang/current/.config/Kingsoft/
-sudo chown -R $USER:$USER ~/snap/wps-office-multilang
+cp ~/.config/Kingsoft/WPSOffice.conf ~/snap/wps-office-multilang/current/.config/Kingsoft/ 2>/dev/null || true
+run_sudo chown -R $USER:$USER ~/snap/wps-office-multilang
 
 # 8. Crear iconos en el Escritorio (solo apps populares)
 echo "--- Creando iconos en el Escritorio ---"
@@ -76,7 +106,7 @@ echo "--- Creando iconos en el Escritorio ---"
 DESKTOP_DIR="$HOME/Escritorio"
 mkdir -p "$DESKTOP_DIR"
 
-# --- Flatpak ---
+# Flatpak
 FLATPAK_APPS=(
   "org.videolan.VLC"
   "org.localsend.localsend_app"
@@ -92,11 +122,21 @@ for app in "${FLATPAK_APPS[@]}"; do
     cp "$DESKTOP_FILE" "$DESKTOP_DIR/"
     chmod +x "$DESKTOP_DIR/${app}.desktop"
     gio set "$DESKTOP_DIR/${app}.desktop" metadata::trusted true 2>/dev/null || true
+
+    # --- ESPECIAL para Chromium: evitar prompt de keyring ---
+    if [ "$app" = "org.chromium.Chromium" ]; then
+      sed -i 's|Exec=flatpak run org.chromium.Chromium|Exec=flatpak run org.chromium.Chromium --password-store=basic|g' "$DESKTOP_DIR/${app}.desktop"
+      sed -i 's|Exec=/usr/bin/flatpak run --branch=stable --arch=x86_64 --command=/app/bin/chromium --file-forwarding org.chromium.Chromium|Exec=/usr/bin/flatpak run --branch=stable --arch=x86_64 --command=/app/bin/chromium --file-forwarding org.chromium.Chromium --password-store=basic|g' "$DESKTOP_DIR/${app}.desktop"
+      # También dejar una copia en ~/.local/share/applications para el menú
+      mkdir -p ~/.local/share/applications
+      cp "$DESKTOP_DIR/${app}.desktop" ~/.local/share/applications/
+    fi
+
     echo "✓ Icono creado: $app"
   fi
 done
 
-# --- SuperTuxKart ---
+# SuperTuxKart
 if [ -f /usr/share/applications/supertuxkart.desktop ]; then
   cp /usr/share/applications/supertuxkart.desktop "$DESKTOP_DIR/"
   chmod +x "$DESKTOP_DIR/supertuxkart.desktop"
@@ -104,7 +144,7 @@ if [ -f /usr/share/applications/supertuxkart.desktop ]; then
   echo "✓ Icono creado: SuperTuxKart"
 fi
 
-# --- SimpleScreenRecorder ---
+# SimpleScreenRecorder
 if [ -f /usr/share/applications/simplescreenrecorder.desktop ]; then
   cp /usr/share/applications/simplescreenrecorder.desktop "$DESKTOP_DIR/"
   chmod +x "$DESKTOP_DIR/simplescreenrecorder.desktop"
@@ -112,7 +152,7 @@ if [ -f /usr/share/applications/simplescreenrecorder.desktop ]; then
   echo "✓ Icono creado: SimpleScreenRecorder"
 fi
 
-# --- WPS Office ---
+# WPS Office
 WPS_DESKTOP=$(find /var/lib/snapd/desktop/applications -name "*wps-office*.desktop" 2>/dev/null | head -n 1)
 if [ -n "$WPS_DESKTOP" ]; then
   cp "$WPS_DESKTOP" "$DESKTOP_DIR/wps-office.desktop"
@@ -121,13 +161,32 @@ if [ -n "$WPS_DESKTOP" ]; then
   echo "✓ Icono creado: WPS Office"
 fi
 
-# 9. Finalizar
-sudo fc-cache -f -v
+# 9. Agrega sonido al iniciar Lm
+# Configurar sonido de inicio en MATE
+echo "--- Configurando Sonido de Inicio ---"
+mkdir -p ~/.config/autostart && cat << 'EOF' > ~/.config/autostart/login-sound.desktop
+[Desktop Entry]
+Type=Application
+Name=Sonido de Inicio
+Comment=Reproduce el sonido al iniciar sesion
+Exec=canberra-gtk-play --id="desktop-login" --description="Linux Mint Login"
+X-GNOME-Autostart-enabled=true
+EOF
+
+# 10. Finalizar
+run_sudo fc-cache -f -v
 update-desktop-database ~/.local/share/applications/ 2>/dev/null || true
 
+# Limpiar variable de contraseña de la memoria
+unset PASSWORD
+
 echo ""
-echo "=============================================="
-echo "  ¡Proceso terminado correctamente!"
-echo "  Cerrá sesión y volvé a entrar."
-echo "  Los iconos populares ya están en el Escritorio."
-echo "=============================================="
+echo "======================================================"
+echo "  ¡Proceso terminado!"
+echo "  Cerrá sesión y volvé a entrar para que todo tome efecto."
+echo "  Los iconos populares ya deberían estar en el Escritorio."
+echo "======================================================"
+echo ""
+echo "Nota: Si aparece la ventana de WPS pidiendo Aceptar,"
+echo "      es el único paso manual que puede quedar."
+echo "======================================================"
