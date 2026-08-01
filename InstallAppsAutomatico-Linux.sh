@@ -36,7 +36,9 @@ run_sudo apt autoremove -y
 
 # 2. Actualizar sistema + aceptar EULA de fuentes Microsoft
 export DEBIAN_FRONTEND=noninteractive
-echo "ttf-mscorefonts-installer msttcorefonts/accepted-mscorefonts-eula select true" | run_sudo debconf-set-selections
+echo "$PASSWORD" | sudo -S debconf-set-selections <<EOF
+ttf-mscorefonts-installer msttcorefonts/accepted-mscorefonts-eula select true
+EOF
 
 run_sudo rm -f /etc/apt/preferences.d/nosnap.pref
 run_sudo apt update
