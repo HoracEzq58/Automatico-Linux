@@ -173,6 +173,9 @@ Exec=canberra-gtk-play --id="desktop-login" --description="Linux Mint Login"
 X-GNOME-Autostart-enabled=true
 EOF
 
+# Desactivar bloqueo de pantalla por inactividad de MATE
+gsettings set org.mate.screensaver lock-enabled false
+
 # 10. Finalizar
 run_sudo fc-cache -f -v
 update-desktop-database ~/.local/share/applications/ 2>/dev/null || true
