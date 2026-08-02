@@ -43,18 +43,18 @@ EOF
 run_sudo rm -f /etc/apt/preferences.d/nosnap.pref
 run_sudo apt update
 run_sudo apt upgrade -y
-run_sudo apt install -y snapd ttf-mscorefonts-installer htop inxi stacer gparted variety simplescreenrecorder
+run_sudo apt install -y snapd ttf-mscorefonts-installer htop inxi stacer gparted variety simplescreenrecorder sox libsox-fmt-all
 
-# 3. Tailscale (método robusto)
+# 3. Tailscale (método robusto corregido)
 echo "--- Instalando Tailscale ---"
 source /etc/os-release
 CODENAME="${UBUNTU_CODENAME:-jammy}"
 
-curl -fsSL https://pkgs.tailscale.com/stable/ubuntu/${CODENAME}.noarmor.gpg | run_sudo tee /usr/share/keyrings/tailscale-archive-keyring.gpg >/dev/null
-curl -fsSL https://pkgs.tailscale.com/stable/ubuntu/${CODENAME}.tailscale-keyring.list | run_sudo tee /etc/apt/sources.list.d/tailscale.list >/dev/null
+curl -fsSL "https://pkgs.tailscale.com/stable/ubuntu/${CODENAME}.noarmor.gpg" | sudo -S tee /usr/share/keyrings/tailscale-archive-keyring.gpg >/dev/null
+echo "deb [signed-by=/usr/share/keyrings/tailscale-archive-keyring.gpg] https://pkgs.tailscale.com/stable/ubuntu ${CODENAME} main" | sudo -S tee /etc/apt/sources.list.d/tailscale.list >/dev/null
 
-run_sudo apt update
-run_sudo apt install -y tailscale
+run_sudo apt update && run_sudo apt install -y tailscale
+
 
 # 4. Juegos
 run_sudo apt install -y supertuxkart extremetuxracer
@@ -163,19 +163,19 @@ if [ -n "$WPS_DESKTOP" ]; then
   echo "✓ Icono creado: WPS Office"
 fi
 
-# 9. Agrega sonido al iniciar Lm
-# Configurar sonido de inicio en MATE
-echo "--- Configurando Sonido de Inicio ---"
-mkdir -p ~/.config/autostart && cat << 'EOF' > ~/.config/autostart/login-sound.desktop
+# 9. Sonido de Inicio MATE y Configuración de Pantalla
+echo "--- Configurando Sonido de Inicio y Desactivando Bloqueo ---"
+mkdir -p ~/.config/autostart
+cat << 'EOF' > ~/.config/autostart/login-sound.desktop
 [Desktop Entry]
 Type=Application
 Name=Sonido de Inicio
-Comment=Reproduce el sonido al iniciar sesion
-Exec=canberra-gtk-play --id="desktop-login" --description="Linux Mint Login"
+Comment=Reproduce el sonido al iniciar sesion con play y delay
+Exec=bash -c "sleep 5 && play -q /usr/share/sounds/LinuxMint/stereo/desktop-login.ogg"
 X-GNOME-Autostart-enabled=true
 EOF
 
-# Desactivar bloqueo de pantalla por inactividad de MATE
+# Desactivar bloqueo de pantalla por inactividad de MATE para los alumnos
 gsettings set org.mate.screensaver lock-enabled false
 
 # 10. Finalizar
