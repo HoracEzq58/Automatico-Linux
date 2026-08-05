@@ -1,6 +1,6 @@
 #!/bin/bash
 # =================================================================
-# InstallAppsAutomatico-Linux.sh - Versión 2 Grok 29/07/2026 (casi 0 intervención)
+# InstallAppsAutomatico-Linux.sh - Versión 3 Modo 01/08/2026 (casi? 0 intervención)
 # Curso ABC PC ICO - Casa de Oración Flores
 # Linux Mint MATE (DDR2 / DDR3)
 # =================================================================

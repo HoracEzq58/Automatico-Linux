@@ -99,26 +99,44 @@ echo "Slots en uso: ${SLOTS}"
 echo ""
 
 # ============================================================
-#  DISCO
+#  DISCO - GROK 05/08/2026
 # ============================================================
 echo "[DISCO]"
-DISCO=$(lsblk -dno NAME,MODEL,SIZE,ROTA,TRAN 2>/dev/null | grep -v "loop\|sr" | head -1)
-DISCO_DEV=$(echo "$DISCO" | awk '{print $1}')
-DISCO_MODELO=$(lsblk -dno MODEL /dev/${DISCO_DEV} 2>/dev/null | xargs)
-DISCO_SIZE=$(lsblk -dno SIZE /dev/${DISCO_DEV} 2>/dev/null | xargs)
-DISCO_ROTA=$(lsblk -dno ROTA /dev/${DISCO_DEV} 2>/dev/null | xargs)
-DISCO_TRAN=$(lsblk -dno TRAN /dev/${DISCO_DEV} 2>/dev/null | tr '[:lower:]' '[:upper:]' | xargs)
 
-if [[ "$DISCO_ROTA" == "0" ]]; then
-    DISCO_TIPO="SSD"
+# Buscar el primer disco real (más confiable que parsear varias columnas)
+DISCO_DEV=""
+for candidate in $(lsblk -dno NAME 2>/dev/null | grep -E '^(sd|hd|vd|nvme)'); do
+    DISCO_DEV="$candidate"
+    break
+done
+
+if [[ -n "$DISCO_DEV" ]]; then
+    DISCO_MODELO=$(lsblk -dno MODEL /dev/$DISCO_DEV 2>/dev/null | xargs)
+    DISCO_SIZE=$(lsblk -dno SIZE /dev/$DISCO_DEV 2>/dev/null | xargs)
+    DISCO_ROTA=$(lsblk -dno ROTA /dev/$DISCO_DEV 2>/dev/null | xargs)
+    DISCO_TRAN=$(lsblk -dno TRAN /dev/$DISCO_DEV 2>/dev/null | tr '[:lower:]' '[:upper:]' | xargs)
+
+    # Fallback si lsblk no trae el modelo
+    if [[ -z "$DISCO_MODELO" ]]; then
+        DISCO_MODELO=$(cat /sys/block/$DISCO_DEV/device/model 2>/dev/null | xargs)
+    fi
+
+    if [[ "$DISCO_ROTA" == "0" ]]; then
+        DISCO_TIPO="SSD"
+    else
+        DISCO_TIPO="HDD"
+    fi
+
+    echo "Modelo    : ${DISCO_MODELO:-No detectado}"
+    echo "Interfaz  : ${DISCO_TRAN:-No detectada}"
+    echo "Tamanio   : ${DISCO_SIZE:-No detectado}"
+    echo "Tipo      : ${DISCO_TIPO}"
 else
-    DISCO_TIPO="HDD"
+    echo "Modelo    : No detectado"
+    echo "Interfaz  : No detectada"
+    echo "Tamanio   : No detectado"
+    echo "Tipo      : No detectado"
 fi
-
-echo "Modelo    : ${DISCO_MODELO:-No detectado}"
-echo "Interfaz  : ${DISCO_TRAN:-No detectada}"
-echo "Tamanio   : ${DISCO_SIZE:-No detectado}"
-echo "Tipo      : ${DISCO_TIPO}"
 echo ""
 
 # ============================================================
