@@ -43,7 +43,7 @@ EOF
 run_sudo rm -f /etc/apt/preferences.d/nosnap.pref
 run_sudo apt update
 run_sudo apt upgrade -y
-run_sudo apt install -y snapd ttf-mscorefonts-installer htop inxi stacer gparted variety simplescreenrecorder sox libsox-fmt-all
+run_sudo apt install -y snapd ttf-mscorefonts-installer htop inxi stacer gparted variety simplescreenrecorder sox libsox-fmt-all smartmontools thunar
 
 # 3. Tailscale (método robusto corregido)
 echo "--- Instalando Tailscale ---"
@@ -177,8 +177,165 @@ EOF
 
 # Desactivar bloqueo de pantalla por inactividad de MATE para los alumnos
 gsettings set org.mate.screensaver lock-enabled false
+# =================================================================
+# SECCIÓN 10: Configuración Automatizada de CoreTemp y Tailscale
+# =================================================================
+echo "--- Configurando Comando coretemp y Permisos de Red ---"
 
-# 10. Finalizar
+# 1. Crear el script coretemp directamente en la carpeta del sistema
+run_sudo tee /usr/local/bin/coretemp << 'EOF'
+#!/bin/bash
+VERDE='\033[0;32m'
+AZUL='\033[0;34m'
+AMARILLO='\033[1;33m'
+RESET='\033[0m'
+
+echo -e "${AZUL}=========================================${RESET}"
+echo -e "${AZUL}     ESTADO DE TEMPERATURAS - TALLER     ${RESET}"
+echo -e "${AZUL}=========================================${RESET}"
+
+echo -e "${VERDE}Temperaturas del CPU:${RESET}"
+if sensors 2>/dev/null | grep -q 'Core 0'; then
+    TEMP_CORE0=$(sensors 2>/dev/null | grep 'Core 0' | awk '{print $3}')
+    TEMP_CORE1=$(sensors 2>/dev/null | grep 'Core 1' | awk '{print $3}')
+    echo -e "  - Core 0: $TEMP_CORE0"
+    echo -e "  - Core 1: $TEMP_CORE1"
+else
+    TEMP_CPU=$(sensors 2>/dev/null | grep -i -E 'Tctl|Package id 0|Tdie|temp1' | head -n 1 | awk '{print $2}')
+    [ -z "$TEMP_CPU" ] && TEMP_CPU="No detectada"
+    echo -e "  - CPU General: $TEMP_CPU"
+fi
+
+TEMP_GPU=$(sensors 2>/dev/null | grep -A 2 'radeon-pci' | grep 'temp1' | awk '{print $2}')
+if [ ! -z "$TEMP_GPU" ]; then
+    echo -e "${VERDE}GPU (Radeon Video):${RESET}     $TEMP_GPU"
+fi
+
+echo -e "${AMARILLO}Resto de discos HDD/SATA:${RESET}"
+for disco in /dev/sd[a-z]; do
+    if [ -b "$disco" ]; then
+        NOMBRE=$(basename "$disco")
+        MODELO=$(lsblk -d -o MODEL "$disco" | tail -n 1 | xargs)
+        if [ "$MODELO" == "Multi-Card" ] || [ -z "$MODELO" ]; then
+            continue
+        fi
+        TEMP_HDD=$(sudo smartctl -A "$disco" 2>/dev/null | awk '$1 == 194 || $1 == 190 {print $10}')
+        if [ -z "$TEMP_HDD" ]; then
+            TEMP_HDD=$(sudo smartctl -a "$disco" 2>/dev/null | grep -i 'Temperature' | awk '{print $4}' | head -n 1)
+        fi
+        if [ -z "$TEMP_HDD" ] || [ "$TEMP_HDD" == "0" ]; then
+            TEMP_HDD="N/A"
+        else
+            TEMP_HDD="+${TEMP_HDD}.0°C"
+        fi
+        echo -e "  - Disco $NOMBRE ($MODELO): $TEMP_HDD"
+    fi
+done
+echo -e "${AZUL}=========================================${RESET}"
+EOF
+
+# 2. Sanitizado de saltos de línea por seguridad
+run_sudo sed -i 's/\r$//' /usr/local/bin/coretemp
+
+# 3. Permisos de ejecución de coretemp
+run_sudo chmod +x /usr/local/bin/coretemp
+
+# 4. Regla sudoers automática para la lectura de discos de los alumnos
+echo "$USER ALL=(ALL) NOPASSWD: /usr/sbin/smartctl" | run_sudo tee /etc/sudoers.d/smartctl-coretemp >/dev/null
+run_sudo chmod 0440 /etc/sudoers.d/smartctl-coretemp
+
+# 5. Autorizar al usuario actual a recibir archivos de Tailscale sin sudo
+run_sudo tailscale set --operator=$USER 2>/dev/null
+
+# 6. Forzar la activación del icono en la barra de tareas al iniciar el escritorio
+mkdir -p /etc/skel/.config/autostart
+echo -e "[Desktop Entry]\nType=Application\nExec=tailscale systray\nHidden=false\nNoDisplay=false\nX-GNOME-Autostart-enabled=true\nName=Tailscale Systray" | run_sudo tee /etc/skel/.config/autostart/tailscale-systray.desktop >/dev/null
+mkdir -p ~/.config/autostart
+cp /etc/skel/.config/autostart/tailscale-systray.desktop ~/.config/autostart/ 2>/dev/null
+
+# 7. Configurar Thunar como explorador preferido del sistema
+run_sudo xdg-mime default thunar.desktop inode/directory application/x-gnome-saved-search 2>/dev/null
+
+# 8. Inyectar la botonera de red múltiple de Tailscale en las acciones de Thunar
+mkdir -p /etc/skel/.config/Thunar
+run_sudo tee /etc/skel/.config/Thunar/uca.xml << 'EOF'
+<?xml version="1.0" encoding="UTF-8"?>
+<actions>
+<action>
+	<icon>network-vpn</icon>
+	<name>Enviar a ABCPC01</name>
+	<unique-id>1000-abcpc01</unique-id>
+	<command>tailscale file cp %f abcpc01:</command>
+	<description>Mandar archivo a la PC 01</description>
+	<patterns>*</patterns>
+	<audio-files/>
+	<image-files/>
+	<other-files/>
+	<text-files/>
+	<video-files/>
+</action>
+<action>
+	<icon>network-vpn</icon>
+	<name>Enviar a ABCPC02</name>
+	<unique-id>1000-abcpc02</unique-id>
+	<command>tailscale file cp %f abcpc02:</command>
+	<description>Mandar archivo a la PC 02</description>
+	<patterns>*</patterns>
+	<audio-files/>
+	<image-files/>
+	<other-files/>
+	<text-files/>
+	<video-files/>
+</action>
+<action>
+	<icon>network-vpn</icon>
+	<name>Enviar a ABCPC03 (Windows)</name>
+	<unique-id>1000-abcpc03</unique-id>
+	<command>tailscale file cp %f abcpc03-desktop:</command>
+	<description>Mandar archivo a la PC de Windows</description>
+	<patterns>*</patterns>
+	<audio-files/>
+	<image-files/>
+	<other-files/>
+	<text-files/>
+	<video-files/>
+</action>
+<action>
+	<icon>network-vpn</icon>
+	<name>Enviar a ABCPC04</name>
+	<unique-id>1000-abcpc04</unique-id>
+	<command>tailscale file cp %f abcpc04:</command>
+	<description>Mandar archivo a la PC 04</description>
+	<patterns>*</patterns>
+	<audio-files/>
+	<image-files/>
+	<other-files/>
+	<text-files/>
+	<video-files/>
+</action>
+<action>
+	<icon>network-vpn</icon>
+	<name>Enviar a ABCPC05 (Dell)</name>
+	<unique-id>1000-abcpc05</unique-id>
+	<command>tailscale file cp %f abcpc05-Inspiron-1545:</command>
+	<description>Mandar archivo a la notebook Dell</description>
+	<patterns>*</patterns>
+	<audio-files/>
+	<image-files/>
+	<other-files/>
+	<text-files/>
+	<video-files/>
+</action>
+</actions>
+EOF
+
+# Aplicar la botonera múltiple al usuario actual de la máquina corriendo el instalador
+mkdir -p ~/.config/Thunar
+cp /etc/skel/.config/Thunar/uca.xml ~/.config/Thunar/ 2>/dev/null
+# =================================================================
+
+
+# 11. Finalizar
 run_sudo fc-cache -f -v
 update-desktop-database ~/.local/share/applications/ 2>/dev/null || true
 
