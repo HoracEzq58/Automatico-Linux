@@ -265,7 +265,7 @@ run_sudo tee /etc/skel/.config/Thunar/uca.xml << 'EOF'
 	<icon>network-vpn</icon>
 	<name>Enviar a ABCPC01</name>
 	<unique-id>1000-abcpc01</unique-id>
-	<command>tailscale file cp %f abcpc01:</command>
+	<command>tailscale file cp %f abcpc01-desktop:</command>
 	<description>Mandar archivo a la PC 01</description>
 	<patterns>*</patterns>
 	<audio-files/>
@@ -278,7 +278,7 @@ run_sudo tee /etc/skel/.config/Thunar/uca.xml << 'EOF'
 	<icon>network-vpn</icon>
 	<name>Enviar a ABCPC02</name>
 	<unique-id>1000-abcpc02</unique-id>
-	<command>tailscale file cp %f abcpc02:</command>
+	<command>tailscale file cp %f abcpc02-desktop:</command>
 	<description>Mandar archivo a la PC 02</description>
 	<patterns>*</patterns>
 	<audio-files/>
@@ -304,7 +304,7 @@ run_sudo tee /etc/skel/.config/Thunar/uca.xml << 'EOF'
 	<icon>network-vpn</icon>
 	<name>Enviar a ABCPC04</name>
 	<unique-id>1000-abcpc04</unique-id>
-	<command>tailscale file cp %f abcpc04:</command>
+	<command>tailscale file cp %f abcpc04-G41M-ES2L:</command>
 	<description>Mandar archivo a la PC 04</description>
 	<patterns>*</patterns>
 	<audio-files/>
@@ -317,7 +317,7 @@ run_sudo tee /etc/skel/.config/Thunar/uca.xml << 'EOF'
 	<icon>network-vpn</icon>
 	<name>Enviar a ABCPC05 (Dell)</name>
 	<unique-id>1000-abcpc05</unique-id>
-	<command>tailscale file cp %f abcpc05-Inspiron-1545:</command>
+	<command>tailscale file cp %f abcpc05-inspiron-1545:</command>
 	<description>Mandar archivo a la notebook Dell</description>
 	<patterns>*</patterns>
 	<audio-files/>
