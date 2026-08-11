@@ -1,16 +1,9 @@
 #!/bin/bash
 # =================================================================
-# InstallAppsAutomatico-Linux.sh - Versión 4 Claude 11/08/2026
+# InstallAppsAutomatico-Linux.sh - Versión 3 Modo 01/08/2026 (casi? 0 intervención)
 # Curso ABC PC ICO - Casa de Oración Flores
 # Linux Mint MATE (DDR2 / DDR3)
 # =================================================================
-
-# --------------------------------------------------------------------------
-# INTERRUPTOR: poné "false" si esta PC no va a formar parte de la mini red
-# Tailscale del taller (te salteás instalación de Tailscale, el operador,
-# el ícono systray, y el submenú "Enviar por Tailscale" en Thunar).
-# --------------------------------------------------------------------------
-INSTALAR_TAILSCALE=true
 
 echo "======================================================"
 echo "  InstallApps Automático - Versión 2"
@@ -53,18 +46,14 @@ run_sudo apt upgrade -y
 run_sudo apt install -y snapd ttf-mscorefonts-installer htop inxi stacer gparted variety simplescreenrecorder sox libsox-fmt-all smartmontools thunar
 
 # 3. Tailscale (método robusto corregido)
-if [ "$INSTALAR_TAILSCALE" = true ]; then
-  echo "--- Instalando Tailscale ---"
-  source /etc/os-release
-  CODENAME="${UBUNTU_CODENAME:-jammy}"
+echo "--- Instalando Tailscale ---"
+source /etc/os-release
+CODENAME="${UBUNTU_CODENAME:-jammy}"
 
-  curl -fsSL "https://pkgs.tailscale.com/stable/ubuntu/${CODENAME}.noarmor.gpg" | sudo -S tee /usr/share/keyrings/tailscale-archive-keyring.gpg >/dev/null
-  echo "deb [signed-by=/usr/share/keyrings/tailscale-archive-keyring.gpg] https://pkgs.tailscale.com/stable/ubuntu ${CODENAME} main" | sudo -S tee /etc/apt/sources.list.d/tailscale.list >/dev/null
+curl -fsSL "https://pkgs.tailscale.com/stable/ubuntu/${CODENAME}.noarmor.gpg" | sudo -S tee /usr/share/keyrings/tailscale-archive-keyring.gpg >/dev/null
+echo "deb [signed-by=/usr/share/keyrings/tailscale-archive-keyring.gpg] https://pkgs.tailscale.com/stable/ubuntu ${CODENAME} main" | sudo -S tee /etc/apt/sources.list.d/tailscale.list >/dev/null
 
-  run_sudo apt update && run_sudo apt install -y tailscale
-else
-  echo "--- Tailscale: SALTEADO (INSTALAR_TAILSCALE=false) ---"
-fi
+run_sudo apt update && run_sudo apt install -y tailscale
 
 
 # 4. Juegos
@@ -255,69 +244,40 @@ run_sudo chmod +x /usr/local/bin/coretemp
 echo "$USER ALL=(ALL) NOPASSWD: /usr/sbin/smartctl" | run_sudo tee /etc/sudoers.d/smartctl-coretemp >/dev/null
 run_sudo chmod 0440 /etc/sudoers.d/smartctl-coretemp
 
-if [ "$INSTALAR_TAILSCALE" = true ]; then
-  # 5. Autorizar al usuario actual a recibir archivos de Tailscale sin sudo
-  run_sudo tailscale set --operator=$USER 2>/dev/null
+# 5. Autorizar al usuario actual a recibir archivos de Tailscale sin sudo
+run_sudo tailscale set --operator=$USER 2>/dev/null
 
-  # 6. Forzar la activación del icono en la barra de tareas al iniciar el escritorio
-  mkdir -p /etc/skel/.config/autostart
-  echo -e "[Desktop Entry]\nType=Application\nExec=tailscale systray\nHidden=false\nNoDisplay=false\nX-GNOME-Autostart-enabled=true\nName=Tailscale Systray" | run_sudo tee /etc/skel/.config/autostart/tailscale-systray.desktop >/dev/null
-  mkdir -p ~/.config/autostart
-  cp /etc/skel/.config/autostart/tailscale-systray.desktop ~/.config/autostart/ 2>/dev/null
-else
-  echo "    (operador y systray de Tailscale salteados: INSTALAR_TAILSCALE=false)"
-fi
+# 6. Forzar la activación del icono en la barra de tareas al iniciar el escritorio
+mkdir -p /etc/skel/.config/autostart
+echo -e "[Desktop Entry]\nType=Application\nExec=tailscale systray\nHidden=false\nNoDisplay=false\nX-GNOME-Autostart-enabled=true\nName=Tailscale Systray" | run_sudo tee /etc/skel/.config/autostart/tailscale-systray.desktop >/dev/null
+mkdir -p ~/.config/autostart
+cp /etc/skel/.config/autostart/tailscale-systray.desktop ~/.config/autostart/ 2>/dev/null
 
 # 7. Configurar Thunar como explorador preferido del sistema
 run_sudo xdg-mime default thunar.desktop inode/directory application/x-gnome-saved-search 2>/dev/null
 
-# =================================================================================================
-# 10.8. INYECTAR BOTONERA DE TAILSCALE EN EL MENU CONTEXTUAL DE THUNAR - Claude 11/08/2026 0735 hs
-# =================================================================================================
+# ================================================================================================
+# 10.8. INYECTAR BOTONERA DE TAILSCALE EN EL MENU CONTEXTUAL DE THUNAR - ChatGPT 10/08/2026 22 hs
+# ================================================================================================
 
-if [ "$INSTALAR_TAILSCALE" = true ]; then
 echo
-echo ">>> Configurando envío de archivos por Tailscale en Thunar (modo dinámico)..."
+echo ">>> Configurando envío de archivos por Tailscale en Thunar..."
 
-# --------------------------------------------------------------------------
-# Mapa de las 5 PCs del taller: "hostname-tailscale:Nombre a mostrar"
-# El hostname-tailscale es el nombre MagicDNS (el que usás en `tailscale file cp X:`)
-# Ajustá esta lista si algún hostname de Tailscale no coincide con el de acá.
-# --------------------------------------------------------------------------
-MAQUINAS=(
-  # "abcpc01-XXXXX:ABCPC01"           # <-- PENDIENTE: correr `tailscale status` en abcpc01 y completar su nombre real
-  "abcpc02-desktop:ABCPC02"
-  "abcpc03-desktop:ABCPC03 (Windows)"
-  "abcpc04-g41m-es2l:ABCPC04"
-  "abcpc05-inspiron-1545:ABCPC05 (Dell)"
-)
+# Crear estructura para usuarios nuevos
+run_sudo mkdir -p /etc/skel/.config/Thunar
 
-MI_HOSTNAME=$(hostname | tr 'A-Z' 'a-z')
-echo "    Hostname detectado en esta PC (normalizado): $MI_HOSTNAME"
+# Crear acciones personalizadas de Thunar
+run_sudo tee /etc/skel/.config/Thunar/uca.xml > /dev/null << 'EOF'
+<?xml version="1.0" encoding="UTF-8"?>
+<actions>
 
-# Armar el XML dinámicamente, salteando la propia máquina
-UCA_TMP=$(mktemp)
-{
-  echo '<?xml version="1.0" encoding="UTF-8"?>'
-  echo '<actions>'
-  for entry in "${MAQUINAS[@]}"; do
-    TS_HOST="${entry%%:*}"
-    NOMBRE="${entry##*:}"
-
-    # Saltear la propia PC (comparando por el hostname corto, sin -desktop etc.)
-    if [[ "$TS_HOST" == "$MI_HOSTNAME"* ]] || [[ "$MI_HOSTNAME" == "$TS_HOST"* ]]; then
-      continue
-    fi
-
-    UID_SAFE=$(echo "$TS_HOST" | tr -c 'a-zA-Z0-9' '-')
-    cat <<EOF
 <action>
     <icon>network-vpn</icon>
-    <name>${NOMBRE}</name>
+    <name>ABCPC01</name>
     <submenu>Enviar por Tailscale</submenu>
-    <unique-id>1000-${UID_SAFE}</unique-id>
-    <command>tailscale file cp %f ${TS_HOST}:</command>
-    <description>Enviar archivo a ${NOMBRE}</description>
+    <unique-id>1000-abcpc01</unique-id>
+    <command>tailscale file cp %f abcpc01-desktop:</command>
+    <description>Enviar archivo a ABCPC01</description>
     <range>*</range>
     <patterns>*</patterns>
     <directories/>
@@ -327,44 +287,56 @@ UCA_TMP=$(mktemp)
     <text-files/>
     <video-files/>
 </action>
+
+<action>
+    <icon>network-vpn</icon>
+    <name>ABCPC03 (Windows)</name>
+    <submenu>Enviar por Tailscale</submenu>
+    <unique-id>1000-abcpc03</unique-id>
+    <command>tailscale file cp %f abcpc03-desktop:</command>
+    <description>Enviar archivo a ABCPC03 Windows</description>
+    <range>*</range>
+    <patterns>*</patterns>
+    <directories/>
+    <audio-files/>
+    <image-files/>
+    <other-files/>
+    <text-files/>
+    <video-files/>
+</action>
+
+<action>
+    <icon>network-vpn</icon>
+    <name>ABCPC05 (Dell)</name>
+    <submenu>Enviar por Tailscale</submenu>
+    <unique-id>1000-abcpc05</unique-id>
+    <command>tailscale file cp %f abcpc05-inspiron-1545:</command>
+    <description>Enviar archivo a la notebook Dell</description>
+    <range>*</range>
+    <patterns>*</patterns>
+    <directories/>
+    <audio-files/>
+    <image-files/>
+    <other-files/>
+    <text-files/>
+    <video-files/>
+</action>
+
+</actions>
 EOF
-  done
-  echo '</actions>'
-} > "$UCA_TMP"
 
-# Validar que el XML haya quedado bien formado antes de instalarlo
-if command -v xmllint >/dev/null 2>&1; then
-  if ! xmllint --noout "$UCA_TMP" 2>/dev/null; then
-    echo "    ✗ ERROR: el uca.xml generado quedó mal formado, no se instala."
-    cat "$UCA_TMP"
-    rm -f "$UCA_TMP"
-  fi
-fi
+# Aplicar la configuración al usuario actual
+mkdir -p ~/.config/Thunar
+run_sudo cp /etc/skel/.config/Thunar/uca.xml ~/.config/Thunar/uca.xml
 
-if [ -f "$UCA_TMP" ]; then
-  # Aplicar la configuración al usuario actual
-  mkdir -p ~/.config/Thunar
-  cp "$UCA_TMP" ~/.config/Thunar/uca.xml
-  rm -f "$UCA_TMP"
+# Asegurar propietario y permisos correctos
+run_sudo chown "$USER:$USER" ~/.config/Thunar/uca.xml
+chmod 644 ~/.config/Thunar/uca.xml
 
-  # Asegurar propietario y permisos correctos (por si el HOME quedó tocado por sudo alguna vez)
-  run_sudo chown "$USER:$USER" ~/.config/Thunar/uca.xml
-  chmod 644 ~/.config/Thunar/uca.xml
+# Recargar Thunar para aplicar los cambios
+thunar -q 2>/dev/null || true
 
-  # Guardar también en /etc/skel para que usuarios nuevos lo hereden
-  run_sudo mkdir -p /etc/skel/.config/Thunar
-  run_sudo cp ~/.config/Thunar/uca.xml /etc/skel/.config/Thunar/uca.xml
-
-  # Recargar Thunar para aplicar los cambios (kill duro, -q a veces no alcanza si quedó como demonio de escritorio)
-  thunar -q 2>/dev/null || true
-  sleep 1
-  pkill -9 -u "$USER" thunar 2>/dev/null || true
-
-  echo "    ✓ Botonera Tailscale configurada en Thunar (excluyendo $MI_HOSTNAME)"
-fi
-else
-  echo "--- Submenú Thunar de Tailscale: SALTEADO (INSTALAR_TAILSCALE=false) ---"
-fi
+echo "    ✓ Botonera Tailscale configurada en Thunar"
 
 # 11. Estirar pantalla de Terminal - Modo 10/08/2026
 #!/bin/bash
