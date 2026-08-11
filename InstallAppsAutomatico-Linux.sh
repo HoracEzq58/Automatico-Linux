@@ -256,86 +256,119 @@ cp /etc/skel/.config/autostart/tailscale-systray.desktop ~/.config/autostart/ 2>
 # 7. Configurar Thunar como explorador preferido del sistema
 run_sudo xdg-mime default thunar.desktop inode/directory application/x-gnome-saved-search 2>/dev/null
 
-# 8. Inyectar la botonera de red múltiple de Tailscale en las acciones de Thunar
-mkdir -p /etc/skel/.config/Thunar
-run_sudo tee /etc/skel/.config/Thunar/uca.xml << 'EOF'
+# ========================================================================================
+# 8. INYECTAR BOTONERA DE TAILSCALE EN EL MENU CONTEXTUAL DE THUNAR -ChatGPT - 10/08/2026
+# ========================================================================================
+
+echo
+echo ">>> Configurando envío de archivos por Tailscale en Thunar..."
+
+# Crear estructura para usuarios nuevos
+run_sudo mkdir -p /etc/skel/.config/Thunar
+
+# Crear acciones personalizadas de Thunar
+run_sudo tee /etc/skel/.config/Thunar/uca.xml > /dev/null << 'EOF'
 <?xml version="1.0" encoding="UTF-8"?>
 <actions>
+
 <action>
-	<icon>network-vpn</icon>
-	<name>Enviar a ABCPC01</name>
-	<unique-id>1000-abcpc01</unique-id>
-	<command>tailscale file cp %f abcpc01-desktop:</command>
-	<description>Mandar archivo a la PC 01</description>
-	<patterns>*</patterns>
-	<audio-files/>
-	<image-files/>
-	<other-files/>
-	<text-files/>
-	<video-files/>
+    <icon>network-vpn</icon>
+    <name>ABCPC01</name>
+    <submenu>Enviar por Tailscale</submenu>
+    <unique-id>1000-abcpc01</unique-id>
+    <command>tailscale file cp %f abcpc01-desktop:</command>
+    <description>Enviar archivo a ABCPC01</description>
+    <range>*</range>
+    <patterns>*</patterns>
+    <directories/>
+    <audio-files/>
+    <image-files/>
+    <other-files/>
+    <text-files/>
+    <video-files/>
 </action>
+
 <action>
-	<icon>network-vpn</icon>
-	<name>Enviar a ABCPC02</name>
-	<unique-id>1000-abcpc02</unique-id>
-	<command>tailscale file cp %f abcpc02-desktop:</command>
-	<description>Mandar archivo a la PC 02</description>
-	<patterns>*</patterns>
-	<audio-files/>
-	<image-files/>
-	<other-files/>
-	<text-files/>
-	<video-files/>
+    <icon>network-vpn</icon>
+    <name>ABCPC03 (Windows)</name>
+    <submenu>Enviar por Tailscale</submenu>
+    <unique-id>1000-abcpc03</unique-id>
+    <command>tailscale file cp %f abcpc03-desktop:</command>
+    <description>Enviar archivo a ABCPC03 Windows</description>
+    <range>*</range>
+    <patterns>*</patterns>
+    <directories/>
+    <audio-files/>
+    <image-files/>
+    <other-files/>
+    <text-files/>
+    <video-files/>
 </action>
+
 <action>
-	<icon>network-vpn</icon>
-	<name>Enviar a ABCPC03 (Windows)</name>
-	<unique-id>1000-abcpc03</unique-id>
-	<command>tailscale file cp %f abcpc03-desktop:</command>
-	<description>Mandar archivo a la PC de Windows</description>
-	<patterns>*</patterns>
-	<audio-files/>
-	<image-files/>
-	<other-files/>
-	<text-files/>
-	<video-files/>
+    <icon>network-vpn</icon>
+    <name>ABCPC04</name>
+    <submenu>Enviar por Tailscale</submenu>
+    <unique-id>1000-abcpc04</unique-id>
+    <command>tailscale file cp %f abcpc04-G41M-ES2L:</command>
+    <description>Enviar archivo a ABCPC04</description>
+    <range>*</range>
+    <patterns>*</patterns>
+    <directories/>
+    <audio-files/>
+    <image-files/>
+    <other-files/>
+    <text-files/>
+    <video-files/>
 </action>
+
 <action>
-	<icon>network-vpn</icon>
-	<name>Enviar a ABCPC04</name>
-	<unique-id>1000-abcpc04</unique-id>
-	<command>tailscale file cp %f abcpc04-G41M-ES2L:</command>
-	<description>Mandar archivo a la PC 04</description>
-	<patterns>*</patterns>
-	<audio-files/>
-	<image-files/>
-	<other-files/>
-	<text-files/>
-	<video-files/>
+    <icon>network-vpn</icon>
+    <name>ABCPC05 (Dell)</name>
+    <submenu>Enviar por Tailscale</submenu>
+    <unique-id>1000-abcpc05</unique-id>
+    <command>tailscale file cp %f abcpc05-inspiron-1545:</command>
+    <description>Enviar archivo a la notebook Dell</description>
+    <range>*</range>
+    <patterns>*</patterns>
+    <directories/>
+    <audio-files/>
+    <image-files/>
+    <other-files/>
+    <text-files/>
+    <video-files/>
 </action>
-<action>
-	<icon>network-vpn</icon>
-	<name>Enviar a ABCPC05 (Dell)</name>
-	<unique-id>1000-abcpc05</unique-id>
-	<command>tailscale file cp %f abcpc05-inspiron-1545:</command>
-	<description>Mandar archivo a la notebook Dell</description>
-	<patterns>*</patterns>
-	<audio-files/>
-	<image-files/>
-	<other-files/>
-	<text-files/>
-	<video-files/>
-</action>
+
 </actions>
 EOF
 
-# Aplicar la botonera múltiple al usuario actual de la máquina corriendo el instalador
+# Aplicar la configuración al usuario actual
 mkdir -p ~/.config/Thunar
-cp /etc/skel/.config/Thunar/uca.xml ~/.config/Thunar/ 2>/dev/null
-# =================================================================
+cp /etc/skel/.config/Thunar/uca.xml ~/.config/Thunar/uca.xml
 
+# Asegurar propietario y permisos correctos
+chown "$USER:$USER" ~/.config/Thunar/uca.xml
+chmod 644 ~/.config/Thunar/uca.xml
 
-# 11. Finalizar
+echo "    ✓ Botonera Tailscale configurada en Thunar"
+
+# 11. Estirar pantalla de Terminal - Modo 10/08/2026
+#!/bin/bash
+
+# 1. Configurar el tamaño predeterminado global (145x35)
+PROFILE=$(gsettings get org.mate.terminal.global profile-list | tr -d "[]'")
+gsettings set org.mate.terminal.profile:/org/mate/terminal/profiles/$PROFILE/ use-custom-default-size true
+gsettings set org.mate.terminal.profile:/org/mate/terminal/profiles/$PROFILE/ default-size-columns 145
+gsettings set org.mate.terminal.profile:/org/mate/terminal/profiles/$PROFILE/ default-size-rows 35
+
+# 2. Copiar el acceso directo del sistema a tu carpeta de usuario
+mkdir -p ~/.local/share/applications
+cp /usr/share/applications/mate-terminal.desktop ~/.local/share/applications/
+
+# 3. Modificar el icono para que use la geometría de posicionamiento superior izquierda (+0+0)
+sed -i 's/^Exec=mate-terminal/Exec=mate-terminal --geometry=+0+0/' ~/.local/share/applications/mate-terminal.desktop
+
+# 12. Finalizar
 run_sudo fc-cache -f -v
 update-desktop-database ~/.local/share/applications/ 2>/dev/null || true
 
