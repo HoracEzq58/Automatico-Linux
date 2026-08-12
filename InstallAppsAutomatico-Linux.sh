@@ -1,9 +1,9 @@
 #!/bin/bash
-# =================================================================
-# InstallAppsAutomatico-Linux.sh - Versión 4 Claude  11/08/2026 
+# ==========================================================================================
+# InstallAppsAutomatico-Linux.sh - Versión 5 Claude 12/08/2026 (auto-recepción de archivos)
 # Curso ABC PC ICO - Casa de Oración Flores
 # Linux Mint MATE (DDR2 / DDR3)
-# =================================================================
+# ==========================================================================================
 
 # --------------------------------------------------------------------------
 # INTERRUPTOR: poné "false" si esta PC no va a formar parte de la mini red
@@ -384,6 +384,46 @@ if [ -f "$UCA_TMP" ]; then
   pkill -9 -u "$USER" thunar 2>/dev/null || true
 
   echo "    ✓ Botonera Tailscale configurada en Thunar (excluyendo $MI_HOSTNAME)"
+
+  # --------------------------------------------------------------------------
+  # Auto-recepción: sin esto, un archivo enviado por el menú de Thunar queda
+  # esperando en la cola interna de Tailscale y NUNCA aparece en Descargas
+  # hasta que alguien corre "tailscale file get" a mano. Este watcher lo hace
+  # solo, cada 10s, y avisa con una notificación de escritorio.
+  # --------------------------------------------------------------------------
+  echo "--- Instalando auto-recepción de archivos Tailscale ---"
+
+  run_sudo tee /usr/local/bin/tailscale-autofetch.sh > /dev/null << 'EOF'
+#!/bin/bash
+DEST="$HOME/Descargas"
+mkdir -p "$DEST"
+while true; do
+  ANTES=$(ls -1 "$DEST" 2>/dev/null | sort)
+  tailscale file get "$DEST" >/dev/null 2>&1
+  DESPUES=$(ls -1 "$DEST" 2>/dev/null | sort)
+  NUEVOS=$(comm -13 <(echo "$ANTES") <(echo "$DESPUES"))
+  if [ -n "$NUEVOS" ] && command -v notify-send >/dev/null 2>&1; then
+    while IFS= read -r archivo; do
+      [ -n "$archivo" ] && notify-send "Tailscale - Archivo recibido" "$archivo" -i network-vpn
+    done <<< "$NUEVOS"
+  fi
+  sleep 10
+done
+EOF
+  run_sudo chmod +x /usr/local/bin/tailscale-autofetch.sh
+
+  # Autostart para todos los usuarios nuevos y para el actual
+  mkdir -p /etc/skel/.config/autostart
+  echo -e "[Desktop Entry]\nType=Application\nExec=/usr/local/bin/tailscale-autofetch.sh\nHidden=false\nNoDisplay=false\nX-GNOME-Autostart-enabled=true\nName=Tailscale Auto-Recepcion" | run_sudo tee /etc/skel/.config/autostart/tailscale-autofetch.desktop >/dev/null
+  mkdir -p ~/.config/autostart
+  cp /etc/skel/.config/autostart/tailscale-autofetch.desktop ~/.config/autostart/ 2>/dev/null
+
+  # Arrancarlo ya, sin esperar al próximo login
+  pkill -f tailscale-autofetch.sh 2>/dev/null
+  nohup /usr/local/bin/tailscale-autofetch.sh >/dev/null 2>&1 &
+  disown
+
+  echo "    ✓ Auto-recepción de archivos instalada y corriendo"
 fi
 else
   echo "--- Submenú Thunar de Tailscale: SALTEADO (INSTALAR_TAILSCALE=false) ---"
