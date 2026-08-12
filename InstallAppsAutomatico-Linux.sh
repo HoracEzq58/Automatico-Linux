@@ -1,6 +1,7 @@
 #!/bin/bash
 # =================================================================
-# InstallAppsAutomatico-Linux.sh - Versión 5 Claude 12/08/2026 (auto-recepción de archivos)
+# InstallAppsAutomatico-Linux.sh - Versión 5 Claude 12/08/2026 
+# (avisa si falta operator Tailscale)
 # Curso ABC PC ICO - Casa de Oración Flores
 # Linux Mint MATE (DDR2 / DDR3)
 # =================================================================
@@ -280,7 +281,13 @@ rm -f "$SUDOERS_TMP"
 
 if [ "$INSTALAR_TAILSCALE" = true ]; then
   # 5. Autorizar al usuario actual a recibir archivos de Tailscale sin sudo
-  run_sudo tailscale set --operator=$USER 2>/dev/null
+  if run_sudo tailscale set --operator=$USER; then
+    echo "    ✓ Operador de Tailscale asignado a $USER"
+  else
+    echo "    ✗ ATENCIÓN: no se pudo asignar el operador de Tailscale."
+    echo "      Probablemente falta hacer login: 'sudo tailscale up --hostname=$(hostname)'"
+    echo "      y DESPUÉS correr a mano: 'sudo tailscale set --operator=$USER'"
+  fi
 
   # 6. Forzar la activación del icono en la barra de tareas al iniciar el escritorio
   mkdir -p /etc/skel/.config/autostart
