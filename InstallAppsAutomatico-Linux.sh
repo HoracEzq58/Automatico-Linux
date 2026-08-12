@@ -1,6 +1,6 @@
 #!/bin/bash
 # =================================================================
-# InstallAppsAutomatico-Linux.sh - Versión 4 Claude 11/08/2026
+# InstallAppsAutomatico-Linux.sh - Versión 4 Claude  11/08/2026 
 # Curso ABC PC ICO - Casa de Oración Flores
 # Linux Mint MATE (DDR2 / DDR3)
 # =================================================================
@@ -34,6 +34,21 @@ if ! echo "$PASSWORD" | sudo -S -v 2>/dev/null; then
   echo "ERROR: Contraseña incorrecta. Abortando."
   exit 1
 fi
+
+# --------------------------------------------------------------------------
+# Keepalive de sudo: refresca la credencial en segundo plano cada 60s.
+# A partir de acá, run_sudo llama a sudo DIRECTO (sin -S ni pipe propio),
+# así nunca compite por el stdin de comandos como "contenido | run_sudo tee archivo".
+# Esto es lo que corrompía coretemp / sudoers.d / tailscale-systray.desktop
+# con la contraseña en vez del contenido real.
+# --------------------------------------------------------------------------
+( while true; do echo "$PASSWORD" | sudo -S -v 2>/dev/null; sleep 60; done ) &
+SUDO_KEEPALIVE_PID=$!
+trap 'kill $SUDO_KEEPALIVE_PID 2>/dev/null' EXIT
+
+run_sudo() {
+  sudo "$@"
+}
 
 echo "--- Iniciando el Tune-up de la Pc ---"
 
@@ -252,8 +267,16 @@ run_sudo sed -i 's/\r$//' /usr/local/bin/coretemp
 run_sudo chmod +x /usr/local/bin/coretemp
 
 # 4. Regla sudoers automática para la lectura de discos de los alumnos
-echo "$USER ALL=(ALL) NOPASSWD: /usr/sbin/smartctl" | run_sudo tee /etc/sudoers.d/smartctl-coretemp >/dev/null
-run_sudo chmod 0440 /etc/sudoers.d/smartctl-coretemp
+SUDOERS_TMP=$(mktemp)
+echo "$USER ALL=(ALL) NOPASSWD: /usr/sbin/smartctl" > "$SUDOERS_TMP"
+if run_sudo visudo -cf "$SUDOERS_TMP" >/dev/null 2>&1; then
+  run_sudo cp "$SUDOERS_TMP" /etc/sudoers.d/smartctl-coretemp
+  run_sudo chmod 0440 /etc/sudoers.d/smartctl-coretemp
+  echo "    ✓ Regla sudoers de smartctl instalada y validada"
+else
+  echo "    ✗ ERROR: la regla sudoers no pasó la validación de visudo, NO se instala"
+fi
+rm -f "$SUDOERS_TMP"
 
 if [ "$INSTALAR_TAILSCALE" = true ]; then
   # 5. Autorizar al usuario actual a recibir archivos de Tailscale sin sudo
@@ -271,9 +294,9 @@ fi
 # 7. Configurar Thunar como explorador preferido del sistema
 run_sudo xdg-mime default thunar.desktop inode/directory application/x-gnome-saved-search 2>/dev/null
 
-# =================================================================================================
-# 10.8. INYECTAR BOTONERA DE TAILSCALE EN EL MENU CONTEXTUAL DE THUNAR - Claude 11/08/2026 0735 hs
-# =================================================================================================
+# ================================================================================================
+# 10.8. INYECTAR BOTONERA DE TAILSCALE EN EL MENU CONTEXTUAL DE THUNAR - ChatGPT 10/08/2026 22 hs
+# ================================================================================================
 
 if [ "$INSTALAR_TAILSCALE" = true ]; then
 echo
