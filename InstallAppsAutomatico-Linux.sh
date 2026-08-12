@@ -1,9 +1,9 @@
 #!/bin/bash
-# ==========================================================================================
+# =================================================================
 # InstallAppsAutomatico-Linux.sh - Versión 5 Claude 12/08/2026 (auto-recepción de archivos)
 # Curso ABC PC ICO - Casa de Oración Flores
 # Linux Mint MATE (DDR2 / DDR3)
-# ==========================================================================================
+# =================================================================
 
 # --------------------------------------------------------------------------
 # INTERRUPTOR: poné "false" si esta PC no va a formar parte de la mini red
@@ -308,7 +308,7 @@ echo ">>> Configurando envío de archivos por Tailscale en Thunar (modo dinámic
 # Ajustá esta lista si algún hostname de Tailscale no coincide con el de acá.
 # --------------------------------------------------------------------------
 MAQUINAS=(
-  # "abcpc01-XXXXX:ABCPC01"           # <-- PENDIENTE: correr `tailscale status` en abcpc01 y completar su nombre real
+  "abcpc01-desktop:ABCPC01"
   "abcpc02-desktop:ABCPC02"
   "abcpc03-desktop:ABCPC03 (Windows)"
   "abcpc04-g41m-es2l:ABCPC04"
