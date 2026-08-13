@@ -1,10 +1,10 @@
 #!/bin/bash
-# =================================================================
-# InstallAppsAutomatico-Linux.sh - Versión 5 Claude 12/08/2026 
+# ==================================================================
+# InstallAppsAutomatico-Linux.sh - Versión 5 Claude 13/08/2026 17.10
 # (avisa si falta operator Tailscale)
 # Curso ABC PC ICO - Casa de Oración Flores
 # Linux Mint MATE (DDR2 / DDR3)
-# =================================================================
+# ==================================================================
 
 # --------------------------------------------------------------------------
 # INTERRUPTOR: poné "false" si esta PC no va a formar parte de la mini red
@@ -12,6 +12,13 @@
 # el ícono systray, y el submenú "Enviar por Tailscale" en Thunar).
 # --------------------------------------------------------------------------
 INSTALAR_TAILSCALE=true
+
+# --------------------------------------------------------------------------
+# Contraseña permanente de RustDesk: completá acá la misma que ya usás para
+# no tener que fijarla a mano en cada PC. Dejá "" para saltear este paso
+# y configurarla vos después con: sudo rustdesk --password TU_CLAVE
+# --------------------------------------------------------------------------
+RUSTDESK_PASSWORD="Abcpc2026"
 
 echo "======================================================"
 echo "  InstallApps Automático - Versión 2"
@@ -95,13 +102,51 @@ flatpak install -y --user flathub \
   io.github.mimbrero.WhatsAppDesktop \
   us.zoom.Zoom \
   org.videolan.VLC \
-  com.rustdesk.RustDesk \
   org.localsend.localsend_app
 
 # Corregir permisos de Flatpak
 mkdir -p ~/.var
 run_sudo chown -R $USER:$USER ~/.var
 chmod -R u+rwX ~/.var
+
+# --------------------------------------------------------------------------
+# 5.5 RustDesk (paquete nativo .deb, NO Flatpak)
+# La versión Flatpak no corre como servicio del sistema en Linux: solo
+# funciona mientras la ventana está abierta, así que no sirve para acceso
+# remoto real. La versión .deb se instala como servicio systemd y queda
+# disponible siempre, incluso sin sesión iniciada.
+# --------------------------------------------------------------------------
+echo "--- Instalando RustDesk (paquete nativo, no Flatpak) ---"
+
+# Si esta PC tenía la versión Flatpak vieja (de una instalación anterior), sacarla
+if flatpak list --user 2>/dev/null | grep -q com.rustdesk.RustDesk; then
+  echo "    Se detectó una versión Flatpak vieja de RustDesk, desinstalando..."
+  flatpak uninstall -y --user com.rustdesk.RustDesk 2>/dev/null
+fi
+rm -f "$HOME/Escritorio/com.rustdesk.RustDesk.desktop"
+rm -f "$HOME/.local/share/applications/com.rustdesk.RustDesk.desktop"
+
+RUSTDESK_DEB_URL=$(curl -fsSL https://api.github.com/repos/rustdesk/rustdesk/releases/latest \
+  | grep -oP '"browser_download_url":\s*"\K[^"]*x86_64\.deb(?=")' | head -n 1)
+
+if [ -n "$RUSTDESK_DEB_URL" ]; then
+  curl -fsSL -o /tmp/rustdesk.deb "$RUSTDESK_DEB_URL"
+  run_sudo apt install -fy /tmp/rustdesk.deb
+  rm -f /tmp/rustdesk.deb
+  run_sudo systemctl enable --now rustdesk
+
+  if [ -n "$RUSTDESK_PASSWORD" ]; then
+    run_sudo rustdesk --password "$RUSTDESK_PASSWORD"
+    echo "    ✓ Contraseña permanente de RustDesk configurada"
+  else
+    echo "    ⚠ RUSTDESK_PASSWORD vacío: fijala a mano con 'sudo rustdesk --password TU_CLAVE'"
+  fi
+
+  echo "    ✓ RustDesk instalado como servicio (arranca solo, sin login)"
+  echo "    ID de esta PC: $(rustdesk --get-id 2>/dev/null)"
+else
+  echo "    ✗ No se pudo detectar la última versión de RustDesk (revisar conexión a GitHub). Instalar a mano."
+fi
 
 # 6. Alias Chromium
 if [ ! -f ~/.bashrc_backup ]; then cp ~/.bashrc ~/.bashrc_backup; fi
@@ -139,7 +184,6 @@ mkdir -p "$DESKTOP_DIR"
 FLATPAK_APPS=(
   "org.videolan.VLC"
   "org.localsend.localsend_app"
-  "com.rustdesk.RustDesk"
   "us.zoom.Zoom"
   "io.github.mimbrero.WhatsAppDesktop"
   "org.chromium.Chromium"
@@ -179,6 +223,15 @@ if [ -f /usr/share/applications/simplescreenrecorder.desktop ]; then
   chmod +x "$DESKTOP_DIR/simplescreenrecorder.desktop"
   gio set "$DESKTOP_DIR/simplescreenrecorder.desktop" metadata::trusted true 2>/dev/null || true
   echo "✓ Icono creado: SimpleScreenRecorder"
+fi
+
+# RustDesk (nativo, reemplaza el ícono viejo de Flatpak si existía)
+RUSTDESK_DESKTOP=$(find /usr/share/applications -iname "rustdesk*.desktop" 2>/dev/null | head -n 1)
+if [ -n "$RUSTDESK_DESKTOP" ]; then
+  cp "$RUSTDESK_DESKTOP" "$DESKTOP_DIR/rustdesk.desktop"
+  chmod +x "$DESKTOP_DIR/rustdesk.desktop"
+  gio set "$DESKTOP_DIR/rustdesk.desktop" metadata::trusted true 2>/dev/null || true
+  echo "✓ Icono creado: RustDesk (nativo)"
 fi
 
 # WPS Office
