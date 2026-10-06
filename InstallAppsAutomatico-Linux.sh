@@ -73,7 +73,7 @@ EOF
 run_sudo rm -f /etc/apt/preferences.d/nosnap.pref
 run_sudo apt update
 run_sudo apt upgrade -y
-run_sudo apt install -y snapd ttf-mscorefonts-installer htop inxi stacer gparted variety simplescreenrecorder sox libsox-fmt-all smartmontools thunar
+run_sudo apt install -y snapd ttf-mscorefonts-installer htop inxi stacer gparted variety simplescreenrecorder sox libsox-fmt-all smartmontools thunar gimp inkscape krita
 
 # 3. Tailscale (método robusto corregido)
 if [ "$INSTALAR_TAILSCALE" = true ]; then
@@ -92,6 +92,14 @@ fi
 
 # 4. Juegos
 run_sudo apt install -y supertuxkart extremetuxracer
+
+# 4.5 FSearch (buscador rápido de archivos)
+if ! run_sudo apt install -y fsearch; then
+  echo "--- FSearch no está en los repos, agregando PPA ---"
+  run_sudo apt install -y software-properties-common
+  run_sudo add-apt-repository -y ppa:christian-boxdoerfer/fsearch-stable
+  run_sudo apt update
+  run_sudo apt install -y fsearch
 
 # 5. Flatpak (como usuario)
 run_sudo apt install -y flatpak
@@ -174,6 +182,14 @@ mkdir -p ~/snap/wps-office-multilang/current/.config/Kingsoft
 cp ~/.config/Kingsoft/WPSOffice.conf ~/snap/wps-office-multilang/current/.config/Kingsoft/ 2>/dev/null || true
 run_sudo chown -R $USER:$USER ~/snap/wps-office-multilang
 
+# 7.5 PowerShell 7
+echo "--- Instalando PowerShell 7 ---"
+if run_sudo snap install powershell --classic; then
+  echo "✓ PowerShell 7 instalado (comando: pwsh)"
+else
+  echo "✗ No se pudo instalar PowerShell 7, instalar a mano."
+fi
+
 # 8. Crear iconos en el Escritorio (solo apps populares)
 echo "--- Creando iconos en el Escritorio ---"
 
@@ -224,6 +240,17 @@ if [ -f /usr/share/applications/simplescreenrecorder.desktop ]; then
   gio set "$DESKTOP_DIR/simplescreenrecorder.desktop" metadata::trusted true 2>/dev/null || true
   echo "✓ Icono creado: SimpleScreenRecorder"
 fi
+
+# GIMP, Inkscape, Krita, FSearch
+for patron in "gimp.desktop" "*inkscape*.desktop" "org.kde.krita.desktop" "*fsearch*.desktop"; do
+  F=$(find /usr/share/applications -iname "$patron" 2>/dev/null | head -n 1)
+  if [ -n "$F" ]; then
+    cp "$F" "$DESKTOP_DIR/"
+    chmod +x "$DESKTOP_DIR/$(basename "$F")"
+    gio set "$DESKTOP_DIR/$(basename "$F")" metadata::trusted true 2>/dev/null || true
+    echo "✓ Icono creado: $(basename "$F")"
+  fi
+done
 
 # RustDesk (nativo, reemplaza el ícono viejo de Flatpak si existía)
 RUSTDESK_DESKTOP=$(find /usr/share/applications -iname "rustdesk*.desktop" 2>/dev/null | head -n 1)
