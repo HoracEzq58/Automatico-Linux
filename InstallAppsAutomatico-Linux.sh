@@ -100,6 +100,7 @@ if ! run_sudo apt install -y fsearch; then
   run_sudo add-apt-repository -y ppa:christian-boxdoerfer/fsearch-stable
   run_sudo apt update
   run_sudo apt install -y fsearch
+fi
 
 # 5. Flatpak (como usuario)
 run_sudo apt install -y flatpak
@@ -542,10 +543,17 @@ unset PASSWORD
 echo ""
 echo "======================================================"
 echo "  ¡Proceso terminado!"
-echo "  Cerrá sesión y volvé a entrar para que todo tome efecto."
-echo "  Los iconos populares ya deberían estar en el Escritorio."
 echo "======================================================"
 echo ""
 echo "Nota: Si aparece la ventana de WPS pidiendo Aceptar,"
 echo "      es el único paso manual que puede quedar."
 echo "======================================================"
+echo ""
+echo "La PC se reiniciará en:"
+
+for i in {5..1}; do
+    echo "$i..."
+    sleep 1
+done
+
+reboot
