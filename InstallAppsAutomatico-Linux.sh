@@ -1,6 +1,6 @@
 #!/bin/bash
 # ==================================================================
-# InstallAppsAutomatico-Linux.sh - Versión 5 Claude 13/08/2026 17.10
+# InstallAppsAutomatico-Linux.sh - Versión 6 Claude 19/10/2026 (suma Solitario y Buscaminas por APT)
 # (avisa si falta operator Tailscale)
 # Curso ABC PC ICO - Casa de Oración Flores
 # Linux Mint MATE (DDR2 / DDR3)
@@ -91,7 +91,7 @@ fi
 
 
 # 4. Juegos
-run_sudo apt install -y supertuxkart extremetuxracer
+run_sudo apt install -y supertuxkart extremetuxracer aisleriot gnome-mines gnome-cards-data
 
 # 4.5 FSearch (buscador rápido de archivos)
 if ! run_sudo apt install -y fsearch; then
@@ -243,7 +243,7 @@ if [ -f /usr/share/applications/simplescreenrecorder.desktop ]; then
 fi
 
 # GIMP, Inkscape, Krita, FSearch
-for patron in "gimp.desktop" "*inkscape*.desktop" "org.kde.krita.desktop" "*fsearch*.desktop"; do
+for patron in "gimp.desktop" "*inkscape*.desktop" "org.kde.krita.desktop" "*fsearch*.desktop" "*aisleriot*.desktop" "sol.desktop" "*mines*.desktop"; do
   F=$(find /usr/share/applications -iname "$patron" 2>/dev/null | head -n 1)
   if [ -n "$F" ]; then
     cp "$F" "$DESKTOP_DIR/"
