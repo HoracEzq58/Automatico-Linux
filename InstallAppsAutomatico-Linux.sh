@@ -11,7 +11,7 @@
 # Tailscale del taller (te salteás instalación de Tailscale, el operador,
 # el ícono systray, y el submenú "Enviar por Tailscale" en Thunar).
 # --------------------------------------------------------------------------
-INSTALAR_TAILSCALE=true
+INSTALAR_TAILSCALE=false
 
 # --------------------------------------------------------------------------
 # Contraseña permanente de RustDesk: completá acá la misma que ya usás para
